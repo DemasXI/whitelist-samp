@@ -1,0 +1,55 @@
+#include <a_samp>
+#include <discord-cmd>
+#include <discord-connector>
+#include <dini>
+
+#define DISCORD_CMD_PREFIX '!'
+enum
+{
+	VAN_TEAM
+};
+new DCC_Channel:vannih;
+main()
+{
+    vannih = DCC_FindChannelById("idchanneluntukws");
+}
+public OnFilterScriptInit()
+{
+	return 1;
+}
+public OnPlayerConnect(playerid)
+{
+    new playername[MAX_PLAYER_NAME+1];
+    GetPlayerName(playerid, playername, sizeof(playername));
+    new player[200];
+    format(player,sizeof(player),"/WhiteList/%s.txt",playername);
+    if(!dini_Exists(player))
+    {
+        ShowPlayerDialog(playerid,VAN_TEAM,DIALOG_STYLE_MSGBOX,"Nama Kamu Belum Terdaftar","Minta dev/owner server\nuntuk mendaftarkan\nakun kamu","Okay","");
+        SetTimerEx("KickTimer",3000,0,"i",playerid);
+    }
+    else
+    {
+        new Van[65];
+        format(Van, sizeof Van, "%s Memasuki kota", playername);
+        SendClientMessageToAll(-1, Van);
+    }
+    return 1;
+}
+DCMD:accept(user, channel, params[])
+{
+		new String[256], str[356];
+		if(isnull(params)) return DCC_SendChannelMessage(channel, "USAGE: !accept [Player_Name]");
+		format(String,sizeof(String),"WhiteList/%s.txt", params);
+		if(dini_Exists(String)) return DCC_SendChannelMessage(channel, "akun ini sudah terdaftar kedalam database whitelist");
+		dini_Create(String);
+		format(str,sizeof(str),"SERVER : Nama %s sukses terdaftar di database whitelist", params);
+		DCC_SendChannelMessage(channel, str);
+		return 1;
+}
+forward KickTimer(playerid);
+public KickTimer(playerid)
+{
+	Kick(playerid);
+	return 1;
+}
